@@ -3,6 +3,7 @@ import numpy as nm
 import pytesseract
 import pyautogui
 import cv2
+from pynput.keyboard import Key, Listener
 dict = {
     'la mer du Nord': [305, 535],
     'Marseille': [456, 960],
@@ -31,14 +32,12 @@ dict = {
     'le Rhéne': [433, 918],
     'les Pyrénées': [320, 985],
 }
-
 pyautogui.doubleClick(420, 800)
 
+
 def imToString():
-    test = True
-    # Path of tesseract executable
     pytesseract.pytesseract.tesseract_cmd = '/opt/homebrew/bin/tesseract'
-    while (test):
+    while (True):
         cap = ImageGrab.grab(bbox=(200, 457, 566, 504))
         captureString = pytesseract.image_to_string(
             cv2.cvtColor(nm.array(cap), cv2.COLOR_BGR2GRAY),
@@ -49,11 +48,25 @@ def imToString():
             index = dict.get(captureString.strip())
             print(index)
             pyautogui.click(index[0], index[1])
-            imToString()
+            # imToString() # Uncomment to make recursive
             break
         else:
             print("No Match")
             break
 
 
-imToString()
+def on_press(key):
+    print()
+    if (key.char == 'e'):
+        imToString()
+    else:
+        quit()
+
+def on_release(key):
+    if key == Key.esc:
+        return False
+
+with Listener(
+        on_press=on_press,
+        on_release=on_release) as listener:
+    listener.join()
